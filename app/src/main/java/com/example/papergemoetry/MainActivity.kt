@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -14,12 +15,29 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.papergemoetry.adapters.CharacterAdapter
+import com.example.papergemoetry.network.CharacterResponse
+import com.example.papergemoetry.network.RickAndMortyApi
 import com.google.android.material.navigation.NavigationView
+import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import com.example.papergemoetry.models.Character
+
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var drawer: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
+
+    //Variables para contenido Catalogo
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://rickandmortyapi.com/api/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val service = retrofit.create(RickAndMortyApi::class.java) //fin para llamada de api
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +66,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             }
             R.id.item_two -> {
-
+                fetchCharacters()
             }
             R.id.item_three -> {
 
@@ -56,6 +74,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         drawer.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun fetchCharacters() {
+        service.getCharacters().enqueue(object : retrofit2.Callback<CharacterResponse> {
+            override fun onResponse(call: Call<CharacterResponse>, response: retrofit2.Response<CharacterResponse>) {
+                if (response.isSuccessful) {
+                    val characters = response.body()?.results ?: emptyList()
+                    setupRecyclerView(characters)
+                }
+            }
+
+            override fun onFailure(call: Call<CharacterResponse>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun setupRecyclerView(characters: List<Character>) {
+        val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
+        val gridLayoutManager = GridLayoutManager(this, 2) // Número de columnas en la cuadrícula
+        recyclerView.layoutManager = gridLayoutManager
+
+
+        recyclerView.adapter = CharacterAdapter(characters)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
