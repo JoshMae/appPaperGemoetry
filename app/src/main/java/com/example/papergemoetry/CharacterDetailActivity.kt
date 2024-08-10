@@ -1,111 +1,97 @@
 package com.example.papergemoetry
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.papergemoetry.adapters.CharacterAdapter
+import com.example.papergemoetry.models.Character
 import com.example.papergemoetry.network.CharacterResponse
 import com.example.papergemoetry.network.RickAndMortyApi
 import com.google.android.material.navigation.NavigationView
+import com.squareup.picasso.Picasso
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.example.papergemoetry.models.Character
 
-
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class CharacterDetailActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var drawer: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
-
-    //Variables para contenido Catalogo
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://rickandmortyapi.com/api/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    private val service = retrofit.create(RickAndMortyApi::class.java) //fin para llamada de api
+    private val service = retrofit.create(RickAndMortyApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_character_detail)
 
-
-        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar_main)
+        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar_character_detail)
         setSupportActionBar(toolbar)
 
-        drawer = findViewById(R.id.drawer_layout)
+        drawer = findViewById(R.id.drawer_layout_details)
         toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.title = "Character Details"
 
-        val navigationView: NavigationView = findViewById(R.id.nav_view)
+        val navigationView: NavigationView = findViewById(R.id.nav_view_details)
         navigationView.setNavigationItemSelectedListener(this)
 
-        val searchInput: EditText = findViewById(R.id.search_input)
-        val searchIcon: ImageView = findViewById(R.id.search_icon)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true) // Agrega el botón "Atrás"
+        supportActionBar?.title = "Character Details"
 
-        searchIcon.setOnClickListener {
-            filterCharacters(searchInput.text.toString())
+        val character = intent.getParcelableExtra<Character>("character")
+
+        val imageView: ImageView = findViewById(R.id.image_character_detail)
+        val nameView: TextView = findViewById(R.id.text_name_detail)
+        val statusView: TextView = findViewById(R.id.text_status_detail)
+        val speciesView: TextView = findViewById(R.id.text_species_detail)
+        val genderView: TextView = findViewById(R.id.text_gender_detail)
+        val originView: TextView = findViewById(R.id.text_origin_detail)
+
+        character?.let {
+            nameView.text = it.name
+            statusView.text = "Status: ${it.status}"
+            speciesView.text = "Species: ${it.species}"
+            genderView.text = "Gender: ${it.gender}"
+            originView.text = "Origin: ${it.origin.name}"
+
+            Picasso.get().load(it.image).into(imageView)
         }
-        searchInput.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {}
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                filterCharacters(s.toString())
-            }
-        })
 
 
-
-    }
-
-
-
-    private fun filterCharacters(query: String) {
-        val filteredList = characters.filter {
-            it.name.contains(query, ignoreCase = true)
-        }
-        setupRecyclerView(filteredList)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
             R.id.item_one -> {
-               findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
+                findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
             }
             R.id.item_two -> {
-               findViewById<LinearLayout>(R.id.search_container).visibility = View.VISIBLE
+                findViewById<LinearLayout>(R.id.search_container).visibility = View.VISIBLE
                 fetchCharacters()
             }
             R.id.item_three -> {
-               findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
+                findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
             }
         }
         drawer.closeDrawer(GravityCompat.START)
@@ -124,7 +110,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             override fun onFailure(call: Call<CharacterResponse>, t: Throwable) {
-                Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@CharacterDetailActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -142,21 +128,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        drawer.openDrawer(GravityCompat.START)
+        return true
+    }
+
+    override fun onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         toggle.syncState()
     }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        toggle.onConfigurationChanged(newConfig)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(toggle.onOptionsItemSelected(item)){
-            return true
-        }
-        return toggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
-    }
 }
+
+
+

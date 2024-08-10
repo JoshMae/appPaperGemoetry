@@ -8,11 +8,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.papergemoetry.R
-import com.squareup.picasso.Picasso
 import com.example.papergemoetry.models.Character
+import com.squareup.picasso.Picasso
 
-class CharacterAdapter(private val characters: List<Character>) :
-    RecyclerView.Adapter<CharacterAdapter.CharacterViewHolder>() {
+class CharacterAdapter(
+    private val characters: List<Character>,
+    private val onCharacterClick: (Character) -> Unit
+) : RecyclerView.Adapter<CharacterAdapter.CharacterViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CharacterViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_character, parent, false)
@@ -23,14 +25,13 @@ class CharacterAdapter(private val characters: List<Character>) :
         val character = characters[position]
         holder.nameTextView.text = character.name
         Picasso.get().load(character.image).into(holder.imageView)
-        holder.addToCartButton.setOnClickListener {
-            // Agregar funcionalidad de carrito más adelante
+
+        holder.itemView.setOnClickListener {
+            onCharacterClick(character)
         }
     }
 
-    override fun getItemCount(): Int {
-        return characters.size
-    }
+    override fun getItemCount(): Int = characters.size
 
     class CharacterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.image_character)
