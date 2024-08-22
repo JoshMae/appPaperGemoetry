@@ -62,7 +62,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="50dp"
                 android:background="@drawable/button_background"
-                android:backgroundTint="#D9A711"
                 android:text="Agregar a Carrito" />
 
 

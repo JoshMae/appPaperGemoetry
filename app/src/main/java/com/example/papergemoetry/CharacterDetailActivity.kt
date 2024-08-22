@@ -145,6 +145,7 @@ class CharacterDetailActivity : AppCompatActivity(), NavigationView.OnNavigation
         super.onPostCreate(savedInstanceState)
         toggle.syncState()
     }
+
 }
 
 

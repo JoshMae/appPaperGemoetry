@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
-
+        fetchCharactersBySpecies("Alien")
 
     }
 
@@ -98,18 +98,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         when (item.itemId) {
             R.id.item_one -> {
-               findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
+                findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
+                fetchCharactersBySpecies("Alien")
+
             }
             R.id.item_two -> {
-               findViewById<LinearLayout>(R.id.search_container).visibility = View.VISIBLE
+                findViewById<LinearLayout>(R.id.search_container).visibility = View.VISIBLE
                 fetchCharacters()
             }
             R.id.item_three -> {
-               findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
+                findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
             }
         }
         drawer.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun fetchCharactersBySpecies(species: String) {
+        service.getCharacters().enqueue(object : retrofit2.Callback<CharacterResponse> {
+            override fun onResponse(call: Call<CharacterResponse>, response: retrofit2.Response<CharacterResponse>) {
+                if (response.isSuccessful) {
+                    val allCharacters = response.body()?.results ?: emptyList()
+                    val filteredCharacters = allCharacters.filter { it.species == species }
+                    setupRecyclerView(filteredCharacters)
+                }
+            }
+
+            override fun onFailure(call: Call<CharacterResponse>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private lateinit var characters: List<Character>
