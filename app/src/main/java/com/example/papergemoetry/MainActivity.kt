@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     //Variables para contenido Catalogo
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("https://rickandmortyapi.com/api/")
+        .baseUrl("http://papergeometry.online")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
-        fetchCharactersBySpecies("Alien")
+        fetchCharactersBySpecies("Mario")
 
     }
 
@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun filterCharacters(query: String) {
         val filteredList = characters.filter {
-            it.name.contains(query, ignoreCase = true)
+            it.nombre.contains(query, ignoreCase = true)
         }
         setupRecyclerView(filteredList)
     }
@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.item_one -> {
                 findViewById<LinearLayout>(R.id.search_container).visibility = View.GONE
-                fetchCharactersBySpecies("Alien")
+                fetchCharactersBySpecies("Mario")
 
             }
             R.id.item_two -> {
@@ -114,38 +114,40 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    private fun fetchCharactersBySpecies(species: String) {
-        service.getCharacters().enqueue(object : retrofit2.Callback<CharacterResponse> {
-            override fun onResponse(call: Call<CharacterResponse>, response: retrofit2.Response<CharacterResponse>) {
+    private fun fetchCharactersBySpecies(categoria: String) {
+        service.getCharacters().enqueue(object : retrofit2.Callback<List<Character>> {
+            override fun onResponse(call: Call<List<Character>>, response: retrofit2.Response<List<Character>>) {
                 if (response.isSuccessful) {
-                    val allCharacters = response.body()?.results ?: emptyList()
-                    val filteredCharacters = allCharacters.filter { it.species == species }
+                    val allCharacters = response.body() ?: emptyList()
+                    val filteredCharacters = allCharacters.filter { it.categoria == categoria }
                     setupRecyclerView(filteredCharacters)
                 }
             }
 
-            override fun onFailure(call: Call<CharacterResponse>, t: Throwable) {
+            override fun onFailure(call: Call<List<Character>>, t: Throwable) {
                 Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
 
     private lateinit var characters: List<Character>
 
     private fun fetchCharacters() {
-        service.getCharacters().enqueue(object : retrofit2.Callback<CharacterResponse> {
-            override fun onResponse(call: Call<CharacterResponse>, response: retrofit2.Response<CharacterResponse>) {
+        service.getCharacters().enqueue(object : retrofit2.Callback<List<Character>> {
+            override fun onResponse(call: Call<List<Character>>, response: retrofit2.Response<List<Character>>) {
                 if (response.isSuccessful) {
-                    characters = response.body()?.results ?: emptyList()
+                    characters = response.body() ?: emptyList()
                     setupRecyclerView(characters)
                 }
             }
 
-            override fun onFailure(call: Call<CharacterResponse>, t: Throwable) {
+            override fun onFailure(call: Call<List<Character>>, t: Throwable) {
                 Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
 
     private fun setupRecyclerView(characters: List<Character>) {
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)

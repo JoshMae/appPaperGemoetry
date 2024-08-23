@@ -23,8 +23,8 @@ class CharacterAdapter(
 
     override fun onBindViewHolder(holder: CharacterViewHolder, position: Int) {
         val character = characters[position]
-        holder.nameTextView.text = character.name
-        Picasso.get().load(character.image).into(holder.imageView)
+        holder.nameTextView.text = character.nombre
+        Picasso.get().load(character.foto).into(holder.imageView)
 
         holder.itemView.setOnClickListener {
             onCharacterClick(character)

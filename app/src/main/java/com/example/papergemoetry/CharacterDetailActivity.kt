@@ -31,7 +31,7 @@ class CharacterDetailActivity : AppCompatActivity(), NavigationView.OnNavigation
     private lateinit var toggle: ActionBarDrawerToggle
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("https://rickandmortyapi.com/api/")
+        .baseUrl("http://papergeometry.online/api/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -68,13 +68,12 @@ class CharacterDetailActivity : AppCompatActivity(), NavigationView.OnNavigation
         val originView: TextView = findViewById(R.id.text_origin_detail)
 
         character?.let {
-            nameView.text = it.name
-            statusView.text = "Status: ${it.status}"
-            speciesView.text = "Species: ${it.species}"
-            genderView.text = "Gender: ${it.gender}"
-            originView.text = "Origin: ${it.origin.name}"
+            nameView.text = it.nombre
+            statusView.text = "Precio: ${it.precio}"
+            speciesView.text = "Detalles: ${it.detalle}"
+            genderView.text = "Categoría: ${it.categoria}"
 
-            Picasso.get().load(it.image).into(imageView)
+            Picasso.get().load(it.foto).into(imageView)
         }
 
 
@@ -101,19 +100,20 @@ class CharacterDetailActivity : AppCompatActivity(), NavigationView.OnNavigation
     private lateinit var characters: List<Character>
 
     private fun fetchCharacters() {
-        service.getCharacters().enqueue(object : retrofit2.Callback<CharacterResponse> {
-            override fun onResponse(call: Call<CharacterResponse>, response: retrofit2.Response<CharacterResponse>) {
+        service.getCharacters().enqueue(object : retrofit2.Callback<List<Character>> {
+            override fun onResponse(call: Call<List<Character>>, response: retrofit2.Response<List<Character>>) {
                 if (response.isSuccessful) {
-                    characters = response.body()?.results ?: emptyList()
+                    characters = response.body() ?: emptyList()
                     setupRecyclerView(characters)
                 }
             }
 
-            override fun onFailure(call: Call<CharacterResponse>, t: Throwable) {
+            override fun onFailure(call: Call<List<Character>>, t: Throwable) {
                 Toast.makeText(this@CharacterDetailActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
 
     private fun setupRecyclerView(characters: List<Character>) {
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
